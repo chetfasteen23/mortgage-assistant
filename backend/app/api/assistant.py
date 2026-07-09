@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.models.lender_chunk import LenderChunk
+from app.services.retrieval import search_lender_chunks
 
 
 router = APIRouter(prefix="/assistant", tags=["assistant"])
@@ -19,18 +18,10 @@ def ask_assistant(
     request: AssistantQuestion,
     db: Session = Depends(get_db),
 ):
-    query = request.question
-
-    chunks = (
-        db.query(LenderChunk)
-        .filter(
-            or_(
-                LenderChunk.chunk_text.ilike(f"%{query}%"),
-                LenderChunk.sheet_name.ilike(f"%{query}%"),
-            )
-        )
-        .limit(5)
-        .all()
+    chunks = search_lender_chunks(
+        db=db,
+        question=request.question,
+        limit=5,
     )
 
     context = [
