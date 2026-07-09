@@ -6,6 +6,7 @@ from app.api.users import router as users_router
 from app.api.uploads import router as uploads_router
 from app.api.search import router as search_router
 from app.api.assistant import router as assistant_router
+from app.api.lender_files import router as lender_files_router
 
 app = FastAPI(title="Mortgage Assistant API")
 
@@ -25,6 +26,7 @@ app.include_router(users_router)
 app.include_router(uploads_router)
 app.include_router(search_router)
 app.include_router(assistant_router)
+app.include_router(lender_files_router)
 
 @app.get("/")
 def root():
