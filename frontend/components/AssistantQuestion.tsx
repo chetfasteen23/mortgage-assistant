@@ -6,65 +6,121 @@ type Source = {
   chunk_text: string;
 };
 
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+  sources?: Source[];
+};
+
 export function AssistantQuestion() {
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [sources, setSources] = useState<Source[]>([]);
-  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleAsk(event: React.FormEvent) {
     event.preventDefault();
 
+    if (!question.trim()) {
+      return;
+    }
+
+    const userMessage: ChatMessage = {
+      role: "user",
+      content: question,
+    };
+
+    setMessages((current) => [...current, userMessage]);
+    setQuestion("");
+    setIsLoading(true);
+
     try {
-      setMessage("Thinking...");
       const response = await api.post("/assistant/ask", {
         question,
       });
 
-      setAnswer(response.data.answer);
-      setSources(response.data.sources);
-      setMessage("");
+      const assistantMessage: ChatMessage = {
+        role: "assistant",
+        content: response.data.answer,
+        sources: response.data.sources,
+      };
+
+      setMessages((current) => [...current, assistantMessage]);
     } catch {
-      setMessage("Failed to get assistant response.");
+      const errorMessage: ChatMessage = {
+        role: "assistant",
+        content: "Sorry, I could not get a response. Please try again.",
+      };
+
+      setMessages((current) => [...current, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
-    <section>
-      <h2>Ask Assistant</h2>
+    <section className="chat-section">
+      <div className="chat-header">
+        <h2>Ask a guideline question</h2>
+        <p>
+          Ask about lender guidelines using the uploaded Excel sheet as context.
+        </p>
+      </div>
 
-      <form onSubmit={handleAsk}>
+      <div className="chat-window">
+        {messages.length === 0 && (
+          <div className="empty-chat">
+            <p>Try asking:</p>
+            <strong>Which lenders allow FHA with a 620 credit score?</strong>
+          </div>
+        )}
+
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`chat-message ${
+              message.role === "user" ? "user-message" : "assistant-message"
+            }`}
+          >
+            <div className="message-bubble">
+              <p>{message.content}</p>
+
+              {message.sources && message.sources.length > 0 && (
+                <details className="sources-details">
+                  <summary>View sources</summary>
+
+                  {message.sources.map((source, sourceIndex) => (
+                    <div key={sourceIndex} className="source-card">
+                      <strong>{source.sheet_name}</strong>
+                      <pre>{source.chunk_text}</pre>
+                    </div>
+                  ))}
+                </details>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {isLoading && (
+          <div className="chat-message assistant-message">
+            <div className="message-bubble">
+              <p>Thinking...</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={handleAsk} className="chat-input-row">
         <textarea
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Example: Which lenders allow FHA with a 620 credit score?"
+          placeholder="Ask a borrower scenario or lender guideline question..."
           required
         />
 
-        <button type="submit">Ask</button>
+        <button type="submit" disabled={isLoading}>
+          Send
+        </button>
       </form>
-
-      {message && <p>{message}</p>}
-
-      {answer && (
-        <div>
-          <h3>Answer</h3>
-          <p>{answer}</p>
-        </div>
-      )}
-
-      {sources.length > 0 && (
-        <div>
-          <h3>Sources</h3>
-
-          {sources.map((source, index) => (
-            <div key={index}>
-              <strong>{source.sheet_name}</strong>
-              <pre>{source.chunk_text}</pre>
-            </div>
-          ))}
-        </div>
-      )}
     </section>
   );
 }
