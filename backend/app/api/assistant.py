@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
+from app.services.llm import answer_with_context
 from app.services.retrieval import search_lender_chunks
 
 
@@ -24,16 +25,21 @@ def ask_assistant(
         limit=5,
     )
 
-    context = [
-        {
-            "sheet_name": chunk.sheet_name,
-            "chunk_text": chunk.chunk_text,
-        }
-        for chunk in chunks
-    ]
+    context_chunks = [chunk.chunk_text for chunk in chunks]
+
+    answer = answer_with_context(
+        question=request.question,
+        context_chunks=context_chunks,
+    )
 
     return {
         "question": request.question,
-        "matched_chunks": context,
-        "message": "These are the lender data chunks that would be sent to the LLM.",
+        "answer": answer,
+        "sources": [
+            {
+                "sheet_name": chunk.sheet_name,
+                "chunk_text": chunk.chunk_text,
+            }
+            for chunk in chunks
+        ],
     }
