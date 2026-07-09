@@ -4,6 +4,7 @@ import { AssistantQuestion } from "../components/AssistantQuestion";
 import { LoginForm } from "../components/LoginForm";
 import { UploadLenderSheet } from "../components/UploadLenderSheet";
 import { api } from "./api/client";
+import { LenderFileStatus } from "../components/LenderFileStatus"
 import "./App.css";
 
 function App() {
@@ -91,6 +92,7 @@ function App() {
         </div>
 
         <div className="panel">
+          <LenderFileStatus />
           <UploadLenderSheet />
         </div>
       </section>
