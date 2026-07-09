@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { AssistantQuestion } from "../components/AssistantQuestion";
 import { LoginForm } from "../components/LoginForm";
-import { UploadLenderSheet } from "../components/UploadLenderSheet";
+import { UploadLenderSheetProps } from "../components/UploadLenderSheet";
 import { api } from "./api/client";
 import { LenderFileStatus } from "../components/LenderFileStatus"
 import "./App.css";
@@ -13,6 +13,11 @@ function App() {
   );
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [fileRefreshKey, setFileRefreshKey] = useState(0);
+
+  function refreshLenderFileStatus() {
+    setFileRefreshKey((current) => current + 1);
+  }
 
   function handleLoginSuccess() {
     setIsAuthenticated(true);
@@ -92,8 +97,8 @@ function App() {
         </div>
 
         <div className="panel">
-          <LenderFileStatus />
-          <UploadLenderSheet />
+          <LenderFileStatus refreshKey={fileRefreshKey} />
+          <UploadLenderSheetProps onUploadSuccess={refreshLenderFileStatus}/>
         </div>
       </section>
     </main>

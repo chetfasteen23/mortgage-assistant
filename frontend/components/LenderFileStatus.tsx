@@ -7,7 +7,11 @@ type LenderFileStatusResponse = {
   uploaded_at?: string;
 };
 
-export function LenderFileStatus() {
+type LenderFileStatusProps = {
+  refreshKey: number;
+};
+
+export function LenderFileStatus({ refreshKey }: LenderFileStatusProps) {
   const [status, setStatus] = useState<LenderFileStatusResponse | null>(null);
 
   async function loadStatus() {
@@ -17,7 +21,7 @@ export function LenderFileStatus() {
 
   useEffect(() => {
     loadStatus();
-  }, []);
+  }, [refreshKey]);
 
   if (!status) {
     return <p>Checking lender file...</p>;

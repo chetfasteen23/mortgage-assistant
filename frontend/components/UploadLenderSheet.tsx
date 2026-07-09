@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { api } from "../src/api/client";
 
-export function UploadLenderSheet() {
+type UploadLenderSheetProps = {
+    onUploadSuccess: () => void;
+  };
+
+export function UploadLenderSheetProps({ onUploadSuccess }: UploadLenderSheetProps) {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
 
@@ -19,6 +23,7 @@ export function UploadLenderSheet() {
     try {
       const response = await api.post("/uploads/lender-sheet", formData);
       setMessage(`Uploaded successfully. Created ${response.data.total_chunks_created} chunks.`);
+      onUploadSuccess();
     } catch {
       setMessage("Upload failed. Make sure you are logged in.");
     }
