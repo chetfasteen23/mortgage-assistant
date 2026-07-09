@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { AssistantQuestion } from "../components/AssistantQuestion";
 import { LoginForm } from "../components/LoginForm";
-import { UploadLenderSheetProps } from "../components/UploadLenderSheet";
+import { UploadLenderSheet } from "../components/UploadLenderSheet";
 import { api } from "./api/client";
 import { LenderFileStatus } from "../components/LenderFileStatus"
 import "./App.css";
@@ -14,6 +14,7 @@ function App() {
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   function refreshLenderFileStatus() {
     setFileRefreshKey((current) => current + 1);
@@ -91,15 +92,29 @@ function App() {
         </button>
       </header>
 
-      <section className="dashboard-grid">
-        <div className="panel">
+      <section className="dashboard-stack">
+        <div className="chat-panel">
           <AssistantQuestion />
         </div>
 
-        <div className="panel">
-          <LenderFileStatus refreshKey={fileRefreshKey} />
-          <UploadLenderSheetProps onUploadSuccess={refreshLenderFileStatus}/>
-        </div>
+        <div className="sheet-management-card">
+  <div className="sheet-card-header">
+    <LenderFileStatus refreshKey={fileRefreshKey} />
+
+    <button
+      className="secondary-button"
+      onClick={() => setIsUploadOpen((current) => !current)}
+    >
+      {isUploadOpen ? "Hide upload" : "Manage lender sheet"}
+    </button>
+  </div>
+
+  {isUploadOpen && (
+    <div className="collapsible-upload">
+      <UploadLenderSheet onUploadSuccess={refreshLenderFileStatus} />
+    </div>
+  )}
+</div>
       </section>
     </main>
   );

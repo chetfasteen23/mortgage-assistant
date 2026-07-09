@@ -2,10 +2,10 @@ import { useState } from "react";
 import { api } from "../src/api/client";
 
 type UploadLenderSheetProps = {
-    onUploadSuccess: () => void;
-  };
+  onUploadSuccess: () => void;
+};
 
-export function UploadLenderSheetProps({ onUploadSuccess }: UploadLenderSheetProps) {
+export function UploadLenderSheet({ onUploadSuccess }: UploadLenderSheetProps) {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
 
@@ -22,7 +22,9 @@ export function UploadLenderSheetProps({ onUploadSuccess }: UploadLenderSheetPro
 
     try {
       const response = await api.post("/uploads/lender-sheet", formData);
-      setMessage(`Uploaded successfully. Created ${response.data.total_chunks_created} chunks.`);
+      setMessage(
+        `Uploaded successfully. Created ${response.data.total_chunks_created} chunks.`
+      );
       onUploadSuccess();
     } catch {
       setMessage("Upload failed. Make sure you are logged in.");
@@ -30,18 +32,16 @@ export function UploadLenderSheetProps({ onUploadSuccess }: UploadLenderSheetPro
   }
 
   return (
-    <form onSubmit={handleUpload}>
-      <h2>Upload Lender Sheet</h2>
-
+    <form onSubmit={handleUpload} className="upload-form">
       <input
         type="file"
         accept=".xlsx,.xls"
         onChange={(event) => setFile(event.target.files?.[0] ?? null)}
       />
 
-      <button type="submit">Upload</button>
+      <button type="submit">Upload new sheet</button>
 
-      <p>{message}</p>
+      {message && <p>{message}</p>}
     </form>
   );
 }
