@@ -32,7 +32,6 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
 
   return (
     <form onSubmit={handleLogin}>
-      <h2>Login</h2>
 
       <input
         type="email"

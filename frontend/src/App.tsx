@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AssistantQuestion } from "../components/AssistantQuestion";
 import { LoginForm } from "../components/LoginForm";
 import { UploadLenderSheet } from "../components/UploadLenderSheet";
+import { api } from "./api/client";
 import "./App.css";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     Boolean(localStorage.getItem("access_token"))
   );
+
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   function handleLoginSuccess() {
     setIsAuthenticated(true);
@@ -19,15 +22,46 @@ function App() {
     setIsAuthenticated(false);
   }
 
+  useEffect(() => {
+  async function checkAuth() {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      setIsAuthenticated(false);
+      setIsCheckingAuth(false);
+      return;
+    }
+
+    try {
+      await api.get("/users/me");
+      setIsAuthenticated(true);
+    } catch {
+      localStorage.removeItem("access_token");
+      setIsAuthenticated(false);
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  }
+
+  checkAuth();
+}, []);
+
+  if (isCheckingAuth) {
+    return (
+      <main className="page auth-page">
+        <section className="auth-card">
+          <h1>Loading...</h1>
+        </section>
+      </main>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <main className="page auth-page">
         <section className="auth-card">
-          <div className="brand-pill">Mortgage Assistant</div>
-          <h1>Sign in to your workspace</h1>
-          <p className="subtitle">
-            Upload lender guidelines, ask borrower scenario questions, and review AI-assisted matches.
-          </p>
+          <h1 color="black">Sign in to your workspace</h1>
+          <div style={{padding: "20px"}}></div>
 
           <LoginForm onLoginSuccess={handleLoginSuccess} />
         </section>
@@ -55,7 +89,7 @@ function App() {
         <div className="panel">
           <AssistantQuestion />
         </div>
-        
+
         <div className="panel">
           <UploadLenderSheet />
         </div>
