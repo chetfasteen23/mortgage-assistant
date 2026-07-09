@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { api } from "../src/api/client";
 
-export function LoginForm() {
-  const [email, setEmail] = useState("test@example.com");
-  const [password, setPassword] = useState("password123");
+type LoginFormProps = {
+  onLoginSuccess: () => void;
+};
+
+export function LoginForm({ onLoginSuccess }: LoginFormProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
   async function handleLogin(event: React.FormEvent) {
@@ -15,10 +19,14 @@ export function LoginForm() {
         password,
       });
 
-      localStorage.setItem("access_token", response.data.access_token);
-      setMessage("Login successful");
+      localStorage.setItem(
+        "access_token",
+        response.data.access_token
+      );
+
+      onLoginSuccess();
     } catch {
-      setMessage("Login failed");
+      setMessage("Invalid email or password.");
     }
   }
 
@@ -31,6 +39,7 @@ export function LoginForm() {
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         placeholder="Email"
+        required
       />
 
       <input
@@ -38,11 +47,14 @@ export function LoginForm() {
         value={password}
         onChange={(event) => setPassword(event.target.value)}
         placeholder="Password"
+        required
       />
 
-      <button type="submit">Login</button>
+      <button type="submit">
+        Sign In
+      </button>
 
-      <p>{message}</p>
+      {message && <p>{message}</p>}
     </form>
   );
 }
