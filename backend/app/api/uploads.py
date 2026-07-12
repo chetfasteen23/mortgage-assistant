@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.lender_chunk import LenderChunk
 from app.models.lender_file import LenderFile
+from app.services.embeddings import create_embeddings
 
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
@@ -71,23 +72,26 @@ async def upload_lender_sheet(
     sheet_summaries = []
 
     for sheet_name, dataframe in excel_data.items():
-        chunks = dataframe_to_chunks(sheet_name, dataframe)
+        chunk_texts = dataframe_to_chunks(sheet_name, dataframe)
+        embeddings = create_embeddings(chunk_texts)
 
-        for chunk_text in chunks:
+        for chunk_text, embedding in zip(chunk_texts, embeddings):
             lender_chunk = LenderChunk(
                 lender_file_id=lender_file.id,
                 sheet_name=sheet_name,
                 chunk_text=chunk_text,
+                embedding=embedding,
             )
+
             db.add(lender_chunk)
 
-        total_chunks += len(chunks)
+        total_chunks += len(chunk_texts)
 
         sheet_summaries.append(
             {
                 "sheet_name": sheet_name,
                 "rows": len(dataframe),
-                "chunks_created": len(chunks),
+                "chunks_created": len(chunk_texts),
                 "columns": list(dataframe.columns),
             }
         )
